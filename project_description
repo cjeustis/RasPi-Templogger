@@ -1,0 +1,25 @@
+Chris Eustis
+ECE 331
+Project Two
+May 2, 2016
+
+The temperature logger developed for Project Two of ECE 331 utilizes a temperature sensor connected to the Raspberry Pi, read via the i2c communication protocol. The temperature is read using a Python script, where the temperature, in Celsius, is stored along with the current date at the time of the reading. The Python script is triggered every minute by using Cron. The Cron entry can be seen as:
+	*/1 * * * * python /var/www/html/templogger/readTemp/temp.py
+and is created by executing the 'crontab -e' command within the terminal.
+
+Once the temperature has been read, the values are stored within a SQLite3 database. The database was created using the command:
+	sqlite3 templogger.db
+With the database created, a new table was created in order to hold the information from the temperature sensor. This was accomplished by the following command:
+	CREATE TABLE tempLog(ID INTEGER PRIMARY KEY AUTOINCREMENT, datetime timestamp, temperature real);
+The table has three columns. The first column is an auto-incrementing ID field, the second is the current datetime at the time of the reading, and the third field is the actual temperature from the sensor in Celsius.
+
+To display the temperature in a visual way, a PHP page was written utilizing the GD library to plot the temperature against a 24 hour time period. The page works by first creating the lines which make up the grid of the plot, displays the times of the sensor readings for the last 24 hours in 40 minute increments, and finally displays the temperature as a line graph by querying the SQLite3 database. Additionally, the most recent temperature read and stored into the database is displayed as a string in the upper right corner of the graph.
+
+Access to the webpage is done using lighttpd. This was accomplished by issuing the following commands via the terminal:
+	sudo apt-get install lighttpd
+	sudo apt-get install php5-cgi
+	sudo apt-get install php5-gd
+	sudo lighttpd-enable-mod fastcgi fastcgi-php
+	sudo service lighttpd force-reload
+
+The only step to get the PHP page to load is to move the file to /var/www/html where the lighttpd server is looking for the files. This was accomplished simply by moving the repository location on the local file system to this directory.
